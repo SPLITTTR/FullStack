@@ -93,6 +93,9 @@ public class CollaborationSocket {
         // Apply to in-memory state
         session.applyEdit(edit.type(), edit.position(), edit.content(), edit.deleteCount());
 
+
+        // Persist best-effort (so content isn't lost if service restarts)
+        sessionManager.persistSession(session, state.documentId());
         // Broadcast to others
         session.broadcast(ServerMessage.edit(state.documentId(), edit), state.userId());
     }

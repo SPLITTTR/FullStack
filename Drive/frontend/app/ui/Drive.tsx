@@ -566,6 +566,25 @@ if (tab === 'MY_DRIVE') {
     URL.revokeObjectURL(url);
   }
 
+  async function downloadDoc(it: ItemDto) {
+    // Download the document content via authenticated API and save as .txt
+    const res = (await authedFetch(`/v1/docs/${it.id}`)) as Response;
+    const data = await res.json().catch(() => ({} as any));
+
+    const text = (data?.content ?? '').toString();
+    const title = ((data?.title ?? it.name ?? 'document').toString()).replace(/[\\/:*?"<>|]+/g, '_');
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const activePath = tab === 'MY_DRIVE' ? myPath : sharedPath;
   const cwd = tab === 'MY_DRIVE' ? myCwd : sharedCwd;
   const currentList = searchQ.trim() ? searchResults : (tab === 'MY_DRIVE' ? items : (sharedCwd === null ? sharedRoots : sharedItems));
@@ -695,6 +714,7 @@ if (tab === 'MY_DRIVE') {
               onOpenFolder={openFolder}
               onPreview={(it) => setPreviewId(it.id)}
               onDownload={downloadFile}
+              onDownloadDoc={downloadDoc}
               onRename={renameItem}
               onShare={shareItem}
               onDelete={deleteItem}
@@ -707,6 +727,7 @@ if (tab === 'MY_DRIVE') {
               onRename={renameItem}
               onShare={shareItem}
               onDownload={downloadFile}
+              onDownloadDoc={downloadDoc}
             />
           )}
         </>
@@ -746,6 +767,7 @@ if (tab === 'MY_DRIVE') {
               thumbUrlById={thumbUrlById}
               onOpenFolder={openFolder}
               onPreview={(it) => setPreviewId(it.id)}
+              onDownloadDoc={downloadDoc}
               onDelete={deleteItem}
               onRename={renameItem}
               onShare={shareItem}
@@ -759,6 +781,7 @@ if (tab === 'MY_DRIVE') {
               onRename={renameItem}
               onShare={shareItem}
               onDownload={downloadFile}
+              onDownloadDoc={downloadDoc}
             />
           )}
         </>
@@ -825,14 +848,14 @@ function UploadPanel({
         position: 'fixed',
         right: 16,
         bottom: 16,
-        width: 'min(550px, calc(100vw - 32px))',
+        width: 'min(500px, calc(100vw - 32px))',
         background: 'white',
         borderRadius: 12,
         boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
         border: '1px solid rgba(0,0,0,0.08)',
         overflow: 'hidden',
         zIndex: 1200,
-        fontSize: 22,
+        fontSize: 20,
       }}
     >
       <div
@@ -983,6 +1006,7 @@ function ItemGrid({
   onOpenFolder,
   onPreview,
   onDownload,
+  onDownloadDoc,
   onRename,
   onShare,
   onDelete,
@@ -992,6 +1016,7 @@ function ItemGrid({
   onOpenFolder: (it: ItemDto) => void;
   onPreview: (it: ItemDto) => void;
   onDownload: (it: ItemDto) => void;
+  onDownloadDoc: (it: ItemDto) => void;
   onRename: (id: string) => void;
   onShare: (id: string) => void;
   onDelete: (id: string) => void;
@@ -1062,7 +1087,10 @@ function ItemGrid({
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {it.type === 'FILE' && img && <button onClick={() => onPreview(it)}>Preview</button>}
               {it.type === 'FILE' && <button onClick={() => onDownload(it)}>Download</button>}
-              {it.type === 'DOC' && <a href={`/docs/${it.id}`}><button>Open in Docs</button></a>}
+              {it.type === 'DOC' && <>
+                <a href={`/docs/${it.id}`}><button>Open in Docs</button></a>
+                <button onClick={() => onDownloadDoc(it)}>Download</button>
+              </>}
               <button onClick={() => onRename(it.id)}>Rename</button>
               <button onClick={() => onShare(it.id)}>Share</button>
               <button onClick={() => onDelete(it.id)}>Delete</button>
@@ -1081,6 +1109,7 @@ function ItemTable({
   onRename,
   onShare,
   onDownload,
+  onDownloadDoc,
 }: {
   items: ItemDto[];
   onOpenFolder: (it: ItemDto) => void;
@@ -1088,6 +1117,7 @@ function ItemTable({
   onRename: (id: string) => void;
   onShare: (id: string) => void;
   onDownload: (it: ItemDto) => void;
+  onDownloadDoc: (it: ItemDto) => void;
 }) {
   if (!items.length) return <div style={{ opacity: 0.7 }}>No items.</div>;
 
@@ -1115,7 +1145,10 @@ function ItemTable({
             <td>{it.type === 'FILE' && typeof it.sizeBytes === 'number' ? formatBytes(it.sizeBytes) : ''}</td>
             <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {it.type === 'FILE' && <button onClick={() => onDownload(it)}>Download</button>}
-              {it.type === 'DOC' && <a href={`/docs/${it.id}`}><button>Open in Docs</button></a>}
+              {it.type === 'DOC' && <>
+                <a href={`/docs/${it.id}`}><button>Open in Docs</button></a>
+                <button onClick={() => onDownloadDoc(it)}>Download</button>
+              </>}
               <button onClick={() => onRename(it.id)}>Rename</button>
               <button onClick={() => onShare(it.id)}>Share</button>
               <button onClick={() => onDelete(it.id)}>Delete</button>
