@@ -250,7 +250,7 @@ export default function DocEditorPage() {
           }}
         />
 
-        <button
+        {/* <button
           onClick={save}
           disabled={saving || loading}
           style={{
@@ -263,11 +263,11 @@ export default function DocEditorPage() {
           }}
         >
           {saving ? 'Saving…' : 'Save'}
-          </button>
+          </button> */}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, color: '#666', fontSize: 13 }}>
-        <div>{loading ? 'Loading…' : `Version: ${serverVersion}`}</div>
+        {/* <div>{loading ? 'Loading…' : `Version: ${serverVersion}`}</div> */}
         <div style={{ color: error ? '#b00020' : '#666' }}>{error ? error : ''}</div>
         <div style={{ opacity: 0.75 }}>Live: {wsStatus === 'connected' ? 'connected' : wsStatus === 'connecting' ? 'connecting' : 'off'}</div>
       </div>
