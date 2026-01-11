@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useAuthedFetch, ItemDto } from './api';
 
 type Tab = 'MY_DRIVE' | 'SHARED';
@@ -45,6 +45,7 @@ function formatBytes(bytes: number): string {
 export default function Drive() {
   const authedFetch = useAuthedFetch();
   const { user, isLoaded, isSignedIn } = useUser();
+  const { getToken } = useAuth();
 
   const [tab, setTab] = useState<Tab>('MY_DRIVE');
   const [viewMode, setViewMode] = useState<ViewMode>('GRID');
@@ -415,13 +416,6 @@ if (tab === 'MY_DRIVE') {
       setShareBusy(false);
     }
   }
-  
-  type PresignUploadResponse = {
-    item: ItemDto;
-    uploadUrl: string;
-    method: string;
-    contentType: string;
-  };
 
   async function uploadFile(file: File) {
     const uploadId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -436,26 +430,19 @@ if (tab === 'MY_DRIVE') {
     ].slice(0, 25));
 
     try {
-      const presignRes = await authedFetch('/v1/files/presign-upload', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          parentId: parentIdAtUpload,
-          filename: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          sizeBytes: file.size,
-        }),
-      });
-      const presign = (await (presignRes as Response).json()) as PresignUploadResponse;
+      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!base) throw new Error('Missing NEXT_PUBLIC_API_BASE_URL');
+      const token = await getToken();
 
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         uploadXhrById.current.set(uploadId, xhr);
 
-        xhr.open(presign.method || 'PUT', presign.uploadUrl, true);
+        xhr.open('POST', `${base}/v1/files/upload`, true);
 
-        const ct = presign.contentType || file.type || 'application/octet-stream';
-        try { xhr.setRequestHeader('Content-Type', ct); } catch {}
+        if (token) {
+          try { xhr.setRequestHeader('Authorization', `Bearer ${token}`); } catch {}
+        }
 
         xhr.upload.onprogress = (evt) => {
           updateUpload(uploadId, { status: 'UPLOADING' });
@@ -472,13 +459,14 @@ if (tab === 'MY_DRIVE') {
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve();
           } else {
-            reject(new Error(`Upload to storage failed (${xhr.status})`));
+            const msg = (xhr.responseText || '').trim();
+            reject(new Error(msg || `Upload failed (${xhr.status})`));
           }
         };
 
         xhr.onerror = () => {
           uploadXhrById.current.delete(uploadId);
-          reject(new Error('Upload to storage failed'));
+          reject(new Error('Upload failed'));
         };
 
         xhr.onabort = () => {
@@ -486,7 +474,11 @@ if (tab === 'MY_DRIVE') {
           reject(new Error('Upload cancelled'));
         };
 
-        xhr.send(file);
+        const form = new FormData();
+        if (parentIdAtUpload) form.append('parentId', parentIdAtUpload);
+        form.append('file', file, file.name);
+
+        xhr.send(form);
       });
 
       updateUpload(uploadId, { status: 'DONE', progress: 100 });
