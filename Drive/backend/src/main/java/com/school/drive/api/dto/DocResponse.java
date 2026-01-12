@@ -3,6 +3,7 @@ package com.school.drive.api.dto;
 import java.time.Instant;
 import java.util.UUID;
 
+// REST endpoints for doc response.
 public class DocResponse {
   public UUID id;
   public UUID parentId;

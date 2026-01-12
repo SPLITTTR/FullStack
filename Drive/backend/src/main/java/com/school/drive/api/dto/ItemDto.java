@@ -5,6 +5,7 @@ import com.school.drive.model.ItemType;
 import java.time.Instant;
 import java.util.UUID;
 
+// REST endpoints for item dto.
 public class ItemDto {
   public UUID id;
   public UUID parentId;

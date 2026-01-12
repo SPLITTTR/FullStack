@@ -2,6 +2,7 @@ package com.school.drive.integration.docs;
 
 import java.time.Instant;
 
+// DocumentResponse.
 public class DocumentResponse {
   public String id;
   public String title;

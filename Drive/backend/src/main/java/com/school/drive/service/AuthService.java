@@ -11,6 +11,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.time.Instant;
 import java.util.UUID;
 
+// Business logic for auth service.
 @ApplicationScoped
 public class AuthService {
 
@@ -18,6 +19,7 @@ public class AuthService {
   @Inject AppUserRepository users;
 
   @Transactional
+  // Create upsert current user.
   public AppUser upsertCurrentUser() {
     // Clerk puts the user id into "sub".
     String clerkUserId = jwt.getSubject();
@@ -37,6 +39,7 @@ public class AuthService {
   }
 
   @Transactional
+  // Me.
   public MeResponse me() {
     AppUser u = upsertCurrentUser();
     MeResponse r = new MeResponse();
@@ -47,6 +50,7 @@ public class AuthService {
   }
 
   @Transactional
+  // Update set username.
   public MeResponse setUsername(String username) {
     AppUser u = upsertCurrentUser();
 

@@ -4,6 +4,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
+// DocumentServiceClient.
 @RegisterRestClient(configKey = "document-service")
 @Path("/api/documents")
 @Produces(MediaType.APPLICATION_JSON)

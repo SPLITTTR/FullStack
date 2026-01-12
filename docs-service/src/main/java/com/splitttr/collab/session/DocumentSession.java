@@ -8,6 +8,7 @@ import io.quarkus.websockets.next.WebSocketConnection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+// DocumentSession.
 public class DocumentSession {
 
     private static final ObjectMapper mapper = new ObjectMapper()
@@ -26,19 +27,23 @@ public class DocumentSession {
         this.documentId = documentId;
     }
 
+    // Create init content.
     public void initContent(String content, long version) {
         this.content = content;
         this.version = version;
     }
 
+    // Retrieve get content.
     public String getContent() {
         return content;
     }
 
+    // Retrieve get version.
     public long getVersion() {
         return version;
     }
 
+    // Apply edit.
     public void applyEdit(String type, int position, String text, int deleteCount) {
         content = switch (type) {
             case "insert" -> content.substring(0, position) + text + content.substring(position);
@@ -49,14 +54,17 @@ public class DocumentSession {
         version++;
     }
 
+    // Add user.
     public void addUser(String userId, WebSocketConnection conn) {
         connections.put(userId, new UserConnection(conn, 0));
     }
 
+    // Delete remove user.
     public void removeUser(String userId) {
         connections.remove(userId);
     }
 
+    // Update update cursor.
     public void updateCursor(String userId, int position) {
         var existing = connections.get(userId);
         if (existing != null) {
@@ -64,16 +72,19 @@ public class DocumentSession {
         }
     }
 
+    // Is empty.
     public boolean isEmpty() {
         return connections.isEmpty();
     }
 
+    // Retrieve get active users.
     public List<ActiveUser> getActiveUsers() {
         return connections.entrySet().stream()
             .map(e -> new ActiveUser(e.getKey(), e.getValue().cursorPosition()))
             .toList();
     }
 
+    // Broadcast.
     public void broadcast(Object message, String excludeUserId) {
         String json = toJson(message);
         connections.forEach((userId, uc) -> {
@@ -83,6 +94,7 @@ public class DocumentSession {
         });
     }
 
+    // Send to.
     public void sendTo(String userId, Object message) {
         var uc = connections.get(userId);
         if (uc != null) {

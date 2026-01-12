@@ -1,5 +1,6 @@
 package com.school.drive.api.dto;
 
+// REST endpoints for presign upload response.
 public class PresignUploadResponse {
   public ItemDto item;
   public String uploadUrl;

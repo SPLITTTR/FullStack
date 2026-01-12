@@ -8,24 +8,29 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+// Business logic for document service.
 @ApplicationScoped
 public class DocumentService {
 
     @Inject
     DocumentRepository repo;
 
+    // Retrieve list all.
     public List<Document> listAll() {
         return repo.listAll();
     }
 
+    // Retrieve list by owner.
     public List<Document> listByOwner(String ownerId) {
         return repo.findByOwner(ownerId);
     }
 
+    // Retrieve get by id.
     public Optional<Document> getById(String id) {
         return Optional.ofNullable(repo.findById(id));
     }
 
+    // Create create.
     public Document create(String id, String title, String content, String ownerId) {
     Document doc = new Document();
     doc.id = (id == null || id.isBlank()) ? null : id;
@@ -39,6 +44,7 @@ public class DocumentService {
     return doc;
 }
 
+    // Update update.
     public Optional<Document> update(String id, String title, String content) {
         Document doc = repo.findById(id);
         if (doc == null) return Optional.empty();
@@ -51,6 +57,7 @@ public class DocumentService {
         return Optional.of(doc);
     }
 
+    // Delete delete.
     public boolean delete(String id) {
         return repo.deleteById(id);
     }

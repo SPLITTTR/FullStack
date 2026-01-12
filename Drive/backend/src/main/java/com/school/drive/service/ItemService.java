@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+// Business logic for item service.
 @ApplicationScoped
 public class ItemService {
 
@@ -78,11 +79,13 @@ public class ItemService {
   }
 
   @Transactional
+  // Retrieve list root.
   public List<ItemDto> listRoot(UUID userId) {
     return items.listRootChildren(userId).stream().map(ItemService::toDto).collect(Collectors.toList());
   }
 
   @Transactional
+  // Retrieve list children.
   public List<ItemDto> listChildren(UUID userId, UUID folderId) {
     var access = perms.accessFor(userId, folderId);
     if (!access.canRead()) throw new ForbiddenException("No access");
@@ -97,6 +100,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Create create folder.
   public ItemDto createFolder(UUID userId, UUID parentId, String name) {
     if (name == null || name.isBlank()) throw new BadRequestException("name required");
 
@@ -121,6 +125,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Update patch item.
   public ItemDto patchItem(UUID userId, UUID itemId, String newName, UUID newParentId) {
     Item it = items.findById(itemId);
     if (it == null) throw new NotFoundException();
@@ -152,6 +157,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Handle upload file.
   public ItemDto uploadFile(UUID userId, UUID parentId, FileUpload fileUpload) {
     if (fileUpload == null) throw new BadRequestException("file required");
     String filename = fileUpload.fileName();
@@ -188,6 +194,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Handle presign upload.
   public PresignUploadResponse presignUpload(UUID userId, UUID parentId, String filename, String mimeType, Long sizeBytes) {
     if (filename == null || filename.isBlank()) throw new BadRequestException("filename required");
 
@@ -234,6 +241,7 @@ public class ItemService {
   }
 
 
+  // Handle download file.
   public DownloadedFile downloadFile(UUID userId, UUID fileId) {
     Item it = items.findById(fileId);
     if (it == null || it.type != ItemType.FILE) throw new NotFoundException();
@@ -253,6 +261,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Manage sharing for share root.
   public void shareRoot(UUID ownerUserId, UUID itemId, String targetUsername, String targetClerkUserId, ShareRole role) {
     if ((targetUsername == null || targetUsername.isBlank()) && (targetClerkUserId == null || targetClerkUserId.isBlank())) {
       throw new BadRequestException("targetUsername or targetClerkUserId required");
@@ -298,6 +307,7 @@ public class ItemService {
   }
 
   @Transactional
+  // Retrieve list shared roots.
   public List<ItemDto> listSharedRoots(UUID userId) {
     List<ItemShare> myShares = shares.listSharesForUser(userId);
 
@@ -311,6 +321,7 @@ public class ItemService {
   }
 
 @Transactional
+// Delete delete item.
 public void deleteItem(UUID userId, UUID itemId) {
     Item it = items.findById(itemId);
   if (it == null) return;
@@ -358,6 +369,7 @@ for (Object[] row : rows) {
 
 
   @Transactional
+  // Search by name.
   public List<ItemDto> searchByName(UUID userId, String q, int limit) {
     if (q == null || q.isBlank()) return List.of();
     int l = Math.min(Math.max(limit, 1), 50);
@@ -370,6 +382,7 @@ for (Object[] row : rows) {
         .collect(Collectors.toList());
   }
 
+  // Search scoped.
   public List<ItemDto> searchScoped(UUID userId, String q, int limit, String scope, UUID folderId) {
     if (q == null || q.isBlank()) return List.of();
     int l = Math.min(Math.max(limit, 1), 50);
@@ -434,6 +447,7 @@ public static class ForbiddenException extends RuntimeException {
   }
 
 @Transactional
+// Create create doc.
 public ItemDto createDoc(UUID userId, UUID parentId, String title) {
   // validate parent
   if (parentId != null) {

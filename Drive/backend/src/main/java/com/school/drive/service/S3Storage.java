@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
 
+// Business logic for s3 storage.
 @ApplicationScoped
 public class S3Storage {
 
@@ -36,6 +37,7 @@ public class S3Storage {
 
   @Produces
   @Singleton
+  // S3 client.
   public S3Client s3Client() {
     var creds = AwsBasicCredentials.create(accessKey, secretKey);
     var s3Config = S3Configuration.builder()
@@ -63,12 +65,14 @@ public class S3Storage {
     }
   }
 
+  // Bucket.
   public String bucket() {
     return bucket;
   }
 
   @Produces
   @Singleton
+  // S3 presigner.
   public S3Presigner s3Presigner() {
     var creds = AwsBasicCredentials.create(accessKey, secretKey);
     var s3Config = S3Configuration.builder()

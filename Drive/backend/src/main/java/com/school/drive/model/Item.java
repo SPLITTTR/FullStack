@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
+// Data model for item.
 @Entity
 @Table(name = "item")
 public class Item extends PanacheEntityBase {

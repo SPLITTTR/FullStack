@@ -7,23 +7,28 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
+// Database access for item repository.
 @ApplicationScoped
 public class ItemRepository implements PanacheRepositoryBase<Item, UUID> {
 
+  // Retrieve list root children.
   public List<Item> listRootChildren(UUID ownerUserId) {
     return list("ownerUserId = ?1 and parentId is null order by type asc, name asc, createdAt asc", ownerUserId);
   }
 
+  // Retrieve list children.
   public List<Item> listChildren(UUID parentId) {
     return list("parentId = ?1 order by type asc, name asc, createdAt asc", parentId);
   }
 
+  // Search by name.
   public List<Item> searchByName(String q, int limit) {
     return find("lower(name) like lower(?1) order by updatedAt desc", "%" + q + "%")
         .page(0, Math.max(1, limit))
         .list();
   }
 
+  // Search owned.
   public List<Item> searchOwned(UUID ownerUserId, String q, int limit) {
     return find("ownerUserId = ?1 and lower(name) like lower(?2) order by updatedAt desc",
         ownerUserId, "%" + q + "%")
@@ -31,6 +36,7 @@ public class ItemRepository implements PanacheRepositoryBase<Item, UUID> {
         .list();
   }
 
+  // Search in subtree.
   public List<Item> searchInSubtree(UUID rootId, String q, int limit) {
     String sql =
         "WITH RECURSIVE tree AS ( " +
@@ -53,6 +59,7 @@ public class ItemRepository implements PanacheRepositoryBase<Item, UUID> {
     return res;
   }
 
+  // Search shared visible.
   public List<Item> searchSharedVisible(UUID userId, String q, int limit) {
     String sql =
         "WITH RECURSIVE visible AS ( " +
@@ -76,6 +83,7 @@ public class ItemRepository implements PanacheRepositoryBase<Item, UUID> {
   }
 
 
+  // Exists in subtree.
   public boolean existsInSubtree(UUID rootId, UUID possibleDescendantId) {
     String sql =
         "WITH RECURSIVE tree AS ( " +
@@ -95,6 +103,7 @@ public class ItemRepository implements PanacheRepositoryBase<Item, UUID> {
     return res != null;
   }
 
+  // Retrieve list file keys in subtree.
   public List<String> listFileKeysInSubtree(UUID rootId) {
     String sql =
         "WITH RECURSIVE tree AS ( " +

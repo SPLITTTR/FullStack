@@ -3,6 +3,7 @@ package com.splitttr.docs.dto;
 import com.splitttr.docs.entity.Document;
 import java.time.Instant;
 
+// Data model for document response.
 public record DocumentResponse(
     String id,
     String title,

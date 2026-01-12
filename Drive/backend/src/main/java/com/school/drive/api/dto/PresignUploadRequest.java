@@ -2,6 +2,7 @@ package com.school.drive.api.dto;
 
 import java.util.UUID;
 
+// REST endpoints for presign upload request.
 public class PresignUploadRequest {
   public UUID parentId;     // null = root
   public String filename;

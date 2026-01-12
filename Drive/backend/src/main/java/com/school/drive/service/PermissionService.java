@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 
 import java.util.UUID;
 
+// Business logic for permission service.
 @ApplicationScoped
 public class PermissionService {
 
@@ -17,15 +18,15 @@ public class PermissionService {
     VIEWER,
     EDITOR;
 
+    // Can read.
     public boolean canRead() { return this != NONE; }
+    // Can write.
     public boolean canWrite() { return this == EDITOR; }
   }
 
-  /**
-   * Shared-roots model:
-   * - You always have EDITOR on items you own.
-   * - You have VIEWER/EDITOR on an item if any ancestor (including itself) is shared with you.
-   */
+    // Shared-roots model:
+  // - You always have EDITOR on items you own.
+  // - You have VIEWER/EDITOR on an item if any ancestor (including itself) is shared with you.
   public Access accessFor(UUID userId, UUID itemId) {
     var item = items.findById(itemId);
     if (item == null) return Access.NONE;

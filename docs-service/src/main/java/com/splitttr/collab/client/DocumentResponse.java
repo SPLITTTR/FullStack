@@ -2,6 +2,7 @@ package com.splitttr.collab.client;
 
 import java.time.Instant;
 
+// DocumentResponse.
 public record DocumentResponse(
     String id,
     String title,

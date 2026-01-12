@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+// Data model for item share.
 @Entity
 @Table(name = "item_share")
 public class ItemShare extends PanacheEntityBase {

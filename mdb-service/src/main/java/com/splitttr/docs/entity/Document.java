@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+// Document.
 @MongoEntity(collection = "documents")
 public class Document extends PanacheMongoEntityBase {
 

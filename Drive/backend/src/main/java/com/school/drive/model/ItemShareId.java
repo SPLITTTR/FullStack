@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+// Data model for item share id.
 @Embeddable
 public class ItemShareId implements Serializable {
   @Column(name = "item_id", nullable = false)

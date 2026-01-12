@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// CollaborationSocket.
 @WebSocket(path = "/ws/docs")
 public class CollaborationSocket {
 
@@ -26,12 +27,14 @@ public class CollaborationSocket {
     record ConnectionState(String userId, String documentId) {}
 
     @OnOpen
+    // On open.
     public void onOpen(WebSocketConnection connection) {
         // Wait for join message
         System.out.println("WebSocket opened: " + connection.id());
     }
 
     @OnTextMessage
+    // On message.
     public void onMessage(String messageJson, WebSocketConnection connection) {
         try {
             ClientMessage msg = mapper.readValue(messageJson, ClientMessage.class);
@@ -127,12 +130,14 @@ public class CollaborationSocket {
     }
 
     @OnClose
+    // On close.
     public void onClose(WebSocketConnection connection) {
         System.out.println("WebSocket closed: " + connection.id());
         handleLeave(connection);
     }
 
     @OnError
+    // On error.
     public void onError(WebSocketConnection connection, Throwable t) {
         System.err.println("WebSocket error: " + t.getMessage());
         handleLeave(connection);

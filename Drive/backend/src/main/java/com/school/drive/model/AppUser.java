@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
+// Data model for app user.
 @Entity
 @Table(name = "app_user")
 public class AppUser extends PanacheEntityBase {

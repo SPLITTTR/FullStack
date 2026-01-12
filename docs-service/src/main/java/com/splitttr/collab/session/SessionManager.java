@@ -7,6 +7,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+// SessionManager.
 @ApplicationScoped
 public class SessionManager {
 
@@ -16,6 +17,7 @@ public class SessionManager {
     @RestClient
     DocumentClient documentClient;
 
+    // Retrieve get or create session.
     public DocumentSession getOrCreateSession(String documentId) {
         return sessions.computeIfAbsent(documentId, id -> {
             var session = new DocumentSession(id);
@@ -32,10 +34,12 @@ public class SessionManager {
         });
     }
 
+    // Retrieve get session.
     public DocumentSession getSession(String documentId) {
         return sessions.get(documentId);
     }
 
+    // Delete remove session if empty.
     public void removeSessionIfEmpty(String documentId) {
         sessions.computeIfPresent(documentId, (id, session) -> {
             if (session.isEmpty()) {
@@ -47,6 +51,7 @@ public class SessionManager {
         });
     }
 
+    // Persist session.
     public void persistSession(DocumentSession session, String documentId) {
         try {
             documentClient.update(documentId,

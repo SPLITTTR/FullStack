@@ -250,24 +250,24 @@ export default function DocEditorPage() {
           }}
         />
 
-        {/* <button
-          onClick={save}
-          disabled={saving || loading}
-          style={{
-            padding: '10px 14px',
-            borderRadius: 10,
-            border: '1px solid #111',
-            background: saving ? '#f5f5f5' : '#111',
-            color: saving ? '#111' : '#fff',
-            cursor: saving || loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {saving ? 'Saving…' : 'Save'}
-          </button> */}
+        {        // <button
+        // onClick={save}
+        // disabled={saving || loading}
+        // style={{
+        // padding: '10px 14px',
+        // borderRadius: 10,
+        // border: '1px solid #111',
+        // background: saving ? '#f5f5f5' : '#111',
+        // color: saving ? '#111' : '#fff',
+        // cursor: saving || loading ? 'not-allowed' : 'pointer',
+        // }}
+        // >
+        // {saving ? 'Saving…' : 'Save'}
+        // </button>}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, color: '#666', fontSize: 13 }}>
-        {/* <div>{loading ? 'Loading…' : `Version: ${serverVersion}`}</div> */}
+        {        // <div>{loading ? 'Loading…' : `Version: ${serverVersion}`}</div>}
         <div style={{ color: error ? '#b00020' : '#666' }}>{error ? error : ''}</div>
         <div style={{ opacity: 0.75 }}>Live: {wsStatus === 'connected' ? 'connected' : wsStatus === 'connecting' ? 'connecting' : 'off'}</div>
       </div>

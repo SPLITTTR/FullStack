@@ -1,5 +1,6 @@
 package com.splitttr.collab.message;
 
+// EditOperation.
 public record EditOperation(
     String userId,
     String type,        // "insert", "delete", "replace"

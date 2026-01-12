@@ -15,6 +15,7 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 import java.util.List;
 import java.util.UUID;
 
+// REST endpoints for drive resource.
 @Path("/v1")
 @Produces(MediaType.APPLICATION_JSON)
 public class DriveResource {
@@ -24,6 +25,7 @@ public class DriveResource {
 
   @GET
   @Path("/me")
+  // HTTP handler: me.
   public MeResponse me() {
     return auth.me();
   }
@@ -32,6 +34,7 @@ public class DriveResource {
   @PUT
   @Path("/me/username")
   @Consumes(MediaType.APPLICATION_JSON)
+  // Update set username.
   public MeResponse setUsername(SetUsernameRequest req) {
     if (req == null) throw new BadRequestException("body required");
     return auth.setUsername(req.username);
@@ -39,6 +42,7 @@ public class DriveResource {
 
   @GET
   @Path("/root/children")
+  // HTTP handler: root children.
   public List<ItemDto> rootChildren() {
     UUID userId = auth.upsertCurrentUser().id;
     return items.listRoot(userId);
@@ -46,6 +50,7 @@ public class DriveResource {
 
   @GET
   @Path("/folders/{id}/children")
+  // HTTP handler: folder children.
   public List<ItemDto> folderChildren(@PathParam("id") UUID folderId) {
     UUID userId = auth.upsertCurrentUser().id;
     return items.listChildren(userId, folderId);
@@ -54,6 +59,7 @@ public class DriveResource {
   @POST
   @Path("/folders")
   @Consumes(MediaType.APPLICATION_JSON)
+  // Create create folder.
   public ItemDto createFolder(CreateFolderRequest req) {
     UUID userId = auth.upsertCurrentUser().id;
     return items.createFolder(userId, req.parentId, req.name);
@@ -62,6 +68,7 @@ public class DriveResource {
   @PATCH
   @Path("/items/{id}")
   @Consumes(MediaType.APPLICATION_JSON)
+  // Update patch item.
   public ItemDto patchItem(@PathParam("id") UUID id, PatchItemRequest req) {
     UUID userId = auth.upsertCurrentUser().id;
     return items.patchItem(userId, id, req.name, req.parentId);
@@ -71,6 +78,7 @@ public class DriveResource {
 @POST
 @Path("/docs")
 @Consumes(MediaType.APPLICATION_JSON)
+// Create create doc.
 public ItemDto createDoc(CreateDocRequest req) {
   UUID userId = auth.upsertCurrentUser().id;
   return items.createDoc(userId, req.parentId, req.title);
@@ -78,6 +86,7 @@ public ItemDto createDoc(CreateDocRequest req) {
 
 @GET
 @Path("/docs/{id}")
+// Retrieve get doc.
 public DocResponse getDoc(@PathParam("id") UUID id) {
   UUID userId = auth.upsertCurrentUser().id;
   return items.getDoc(userId, id);
@@ -86,6 +95,7 @@ public DocResponse getDoc(@PathParam("id") UUID id) {
 @PUT
 @Path("/docs/{id}")
 @Consumes(MediaType.APPLICATION_JSON)
+// Update update doc.
 public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
   UUID userId = auth.upsertCurrentUser().id;
   return items.updateDoc(userId, id, req.title, req.content);
@@ -94,6 +104,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
 @POST
   @Path("/files/upload")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
+  // Handle upload file.
   public ItemDto uploadFile(@RestForm("parentId") String parentIdStr,
                             @RestForm("file") FileUpload file) {
     UUID userId = auth.upsertCurrentUser().id;
@@ -104,6 +115,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
   @GET
   @Path("/files/{id}/download")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  // Handle download.
   public Response download(@PathParam("id") UUID id) {
     UUID userId = auth.upsertCurrentUser().id;
     ItemService.DownloadedFile f = items.downloadFile(userId, id);
@@ -118,6 +130,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
   @POST
   @Path("/items/{id}/share")
   @Consumes(MediaType.APPLICATION_JSON)
+  // Manage sharing for share.
   public Response share(@PathParam("id") UUID id, ShareRequest req) {
     UUID userId = auth.upsertCurrentUser().id;
     items.shareRoot(userId, id, req.targetUsername, req.targetClerkUserId, req.role);
@@ -126,6 +139,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
 
   @GET
   @Path("/shared")
+  // Manage sharing for shared roots.
   public List<ItemDto> sharedRoots() {
     UUID userId = auth.upsertCurrentUser().id;
     return items.listSharedRoots(userId);
@@ -133,6 +147,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
 
   @DELETE
   @Path("/items/{id}")
+  // Delete delete.
   public Response delete(@PathParam("id") UUID id) {
     UUID userId = auth.upsertCurrentUser().id;
     items.deleteItem(userId, id);
@@ -141,6 +156,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
 
   @GET
   @Path("/search")
+  // HTTP handler: search.
   public List<ItemDto> search(@QueryParam("q") String q,
                               @QueryParam("limit") @DefaultValue("20") int limit,
                               @QueryParam("scope") @DefaultValue("MY_DRIVE") String scope,
@@ -153,6 +169,7 @@ public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
   @POST
   @Path("/files/presign-upload")
   @Consumes(MediaType.APPLICATION_JSON)
+  // Handle presign upload.
   public PresignUploadResponse presignUpload(PresignUploadRequest req) {
     UUID userId = auth.upsertCurrentUser().id;
     return items.presignUpload(userId, req.parentId, req.filename, req.mimeType, req.sizeBytes);

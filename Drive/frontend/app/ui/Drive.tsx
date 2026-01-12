@@ -629,7 +629,7 @@ if (tab === 'MY_DRIVE') {
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               <button onClick={goBack} disabled={activePath.length <= 1}>Back</button>
-              {/* <button onClick={goRoot} disabled={cwd === null}>Root</button> */}
+              {              // <button onClick={goRoot} disabled={cwd === null}>Root</button>}
 
               <span style={{ marginLeft: 8, opacity: 0.8 }}>View:</span>
               <button onClick={() => setViewMode('GRID')} disabled={viewMode === 'GRID'}>Grid</button>
@@ -642,7 +642,7 @@ if (tab === 'MY_DRIVE') {
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <span>Upload:</span>
 
-                {/* skrit native input */}
+                {                // skrit native input}
                 <input
                   id="filePicker"
                   type="file"
@@ -663,7 +663,7 @@ if (tab === 'MY_DRIVE') {
                   }}
                 />
 
-                {/* gumb za izbiro */}
+                {                // gumb za izbiro}
                 <label
                   htmlFor="filePicker"
                   style={{
@@ -678,7 +678,7 @@ if (tab === 'MY_DRIVE') {
                   Browse…
                 </label>
 
-                {/* filename s truncation, fiksna širina => nič ne skače */}
+                {                // filename s truncation, fiksna širina => nič ne skače}
                 <span
                   title={pickedFileName}
                   style={{
