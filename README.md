@@ -1,3 +1,46 @@
+new: setup:
+
+kind create cluster --name splitttr
+docker build -t splitttr/drive-backend:local ./Drive/backend
+docker build -t splitttr/mdb-service:local ./mdb-service
+docker build -t splitttr/docs-service:local ./docs-service
+
+docker build -t splitttr/drive-frontend:local \
+  --build-arg NEXT_PUBLIC_API_BASE_URL=http://localhost:8080 \
+  --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=PASTE_PUBLISHABLE_KEY \
+  ./Drive/frontend
+
+kind load docker-image splitttr/drive-backend:local --name splitttr
+kind load docker-image splitttr/mdb-service:local --name splitttr
+kind load docker-image splitttr/docs-service:local --name splitttr
+kind load docker-image splitttr/drive-frontend:local --name splitttr
+
+kubectl apply -f k8s/00-namespace.yaml
+kubectl apply -n splitttr -f k8s/10-postgres.yaml
+kubectl apply -n splitttr -f k8s/11-mongo.yaml
+kubectl apply -n splitttr -f k8s/12-minio.yaml
+kubectl apply -n splitttr -f k8s/13-minio-init-job.yaml
+kubectl apply -n splitttr -f k8s/20-configmap.yaml
+
+kubectl create secret generic app-secrets -n splitttr \
+  --from-literal=CLERK_SECRET_KEY=PASTE_SECRET_KEY \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -n splitttr -f k8s/30-mdb-service.yaml
+kubectl apply -n splitttr -f k8s/31-docs-service.yaml
+kubectl apply -n splitttr -f k8s/40-drive-backend.yaml
+kubectl apply -n splitttr -f k8s/41-drive-frontend.yaml
+
+in run z:
+na enm cmd-ju:
+kubectl port-forward -n splitttr svc/drive-backend 8080:8080
+
+in na drugem:
+kubectl port-forward -n splitttr svc/drive-frontend 3000:3000
+
+
+
+old
 ## Run everything with Docker (recommended)
 
 This repo contains:

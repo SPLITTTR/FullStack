@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drive-backend
+  namespace: splitttr
+spec:
+  selector:
+    app: drive-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drive-backend
+  namespace: splitttr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drive-backend
+  template:
+    metadata:
+      labels:
+        app: drive-backend
+    spec:
+      containers:
+        - name: drive-backend
+          image: splitttr/drive-backend:local
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+            - name: QUARKUS_HTTP_CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: QUARKUS_HTTP_CORS_ORIGINS
+
+            - name: mp.jwt.verify.publickey.location
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MP_JWT_VERIFY_PUBLICKEY_LOCATION
+            - name: mp.jwt.verify.publickey.algorithm
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MP_JWT_VERIFY_PUBLICKEY_ALGORITHM
+            - name: mp.jwt.verify.issuer
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: MP_JWT_VERIFY_ISSUER
+
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: QUARKUS_DATASOURCE_JDBC_URL
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: QUARKUS_DATASOURCE_USERNAME
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: QUARKUS_DATASOURCE_PASSWORD
+
+            - name: APP_S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_S3_ENDPOINT
+            - name: APP_S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_S3_REGION
+            - name: APP_S3_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_S3_ACCESS_KEY
+            - name: APP_S3_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_S3_SECRET_KEY
+            - name: APP_S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: APP_S3_BUCKET
+
+            - name: DOC_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: DOC_SERVICE_URL
