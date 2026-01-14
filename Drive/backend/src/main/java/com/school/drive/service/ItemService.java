@@ -498,6 +498,10 @@ public com.school.drive.api.dto.DocResponse getDoc(UUID userId, UUID docId) {
   out.createdAt = it.createdAt;
   out.updatedAt = it.updatedAt;
   out.version = doc == null ? 0 : doc.version;
+  
+  out.access = access.name();
+  out.canWrite = access.canWrite();
+
   return out;
 }
 
@@ -517,17 +521,21 @@ public com.school.drive.api.dto.DocResponse updateDoc(UUID userId, UUID docId, S
 
   DocumentUpdateRequest req = new DocumentUpdateRequest();
   req.title = it.name;
-  req.content = content == null ? "" : content;
+  req.content = content; // allow null to update title only
   DocumentResponse doc = documentService.update(docId.toString(), req);
 
   com.school.drive.api.dto.DocResponse out = new com.school.drive.api.dto.DocResponse();
   out.id = it.id;
   out.parentId = it.parentId;
   out.title = it.name;
-  out.content = doc == null ? req.content : (doc.content == null ? req.content : doc.content);
+  out.content = (doc != null && doc.content != null) ? doc.content : (req.content != null ? req.content : "");
   out.createdAt = it.createdAt;
   out.updatedAt = it.updatedAt;
   out.version = doc == null ? 0 : doc.version;
+  
+  out.access = access.name();
+  out.canWrite = access.canWrite();
+
   return out;
 }
 

@@ -12,4 +12,10 @@ public class DocResponse {
   public Instant createdAt;
   public Instant updatedAt;
   public long version;
+
+  // Access role for current user: NONE | VIEWER | EDITOR
+  public String access;
+  // Convenience flag
+  public boolean canWrite;
 }
+

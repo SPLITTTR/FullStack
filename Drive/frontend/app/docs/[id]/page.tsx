@@ -13,6 +13,8 @@ type DocResponse = {
   createdAt: string;
   updatedAt: string;
   version: number;
+  access?: string;
+  canWrite?: boolean;
 };
 
 type ActiveUser = { userId: string; username?: string; cursorPosition: number };
@@ -67,6 +69,7 @@ export default function DocEditorPage() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [canWrite, setCanWrite] = useState<boolean>(true);
   const [serverVersion, setServerVersion] = useState<number>(0);
 
   const [meId, setMeId] = useState<string>('');
@@ -104,6 +107,21 @@ export default function DocEditorPage() {
     }, 250);
     return () => clearInterval(t);
   }, []);
+
+  // Persist title changes (does not overwrite content)
+  async function saveTitle(nextTitle: string) {
+    if (!canWrite) return;
+    const trimmed = (nextTitle || '').trim();
+    try {
+      await authedFetch(`/v1/docs/${docId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: trimmed.length ? trimmed : 'Untitled' }),
+      });
+    } catch (e) {
+      // Best-effort; keep local title even if request fails
+    }
+  }
 
   function applyEdit(base: string, op: any): string {
     const type = op?.type;
@@ -415,6 +433,7 @@ export default function DocEditorPage() {
       setContent(data.content || '');
       lastContentRef.current = data.content || '';
       setServerVersion(data.version || 0);
+      setCanWrite(data.canWrite !== false);
     } catch (e: any) {
       setError(e?.message || 'Failed to load document');
     } finally {
@@ -509,7 +528,9 @@ export default function DocEditorPage() {
 
         <input
           value={title}
+          readOnly={!canWrite}
           onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => saveTitle(title)}
           placeholder="Untitled"
           style={{
             flex: 1,
@@ -581,8 +602,10 @@ export default function DocEditorPage() {
 
         <textarea
           ref={textareaRef}
+          readOnly={!canWrite}
           value={content}
           onChange={(e) => {
+            if (!canWrite) return;
             const next = e.target.value;
             const prev = lastContentRef.current;
 
