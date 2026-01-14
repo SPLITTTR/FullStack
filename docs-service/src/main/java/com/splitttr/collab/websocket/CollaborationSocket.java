@@ -110,9 +110,13 @@ public class CollaborationSocket {
         DocumentSession session = sessionManager.getSession(state.documentId());
         if (session == null) return;
 
-        session.updateCursor(state.userId(), msg.cursorPosition());
+        // cursorPosition can be null if the client sends a malformed payload; guard to avoid NPE
+        final Integer cp = msg.cursorPosition();
+        final int pos = (cp == null) ? 0 : cp.intValue();
+
+        session.updateCursor(state.userId(), pos);
         session.broadcast(
-            ServerMessage.cursor(state.documentId(), state.userId(), msg.cursorPosition()),
+            ServerMessage.cursor(state.documentId(), state.userId(), pos),
             state.userId()
         );
     }

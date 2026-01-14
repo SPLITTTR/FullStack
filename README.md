@@ -38,6 +38,8 @@ kubectl port-forward -n splitttr svc/drive-backend 8080:8080
 in na drugem:
 kubectl port-forward -n splitttr svc/drive-frontend 3000:3000
 
+in na tretjem:
+kubectl port-forward -n splitttr svc/docs-service 8082:8082
 
 
 old
