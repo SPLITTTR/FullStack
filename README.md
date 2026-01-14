@@ -5,10 +5,7 @@ docker build -t splitttr/drive-backend:local ./Drive/backend
 docker build -t splitttr/mdb-service:local ./mdb-service
 docker build -t splitttr/docs-service:local ./docs-service
 
-docker build -t splitttr/drive-frontend:local \
-  --build-arg NEXT_PUBLIC_API_BASE_URL=http://localhost:8080 \
-  --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=PASTE_PUBLISHABLE_KEY \
-  ./Drive/frontend
+docker build -t splitttr/drive-frontend:local --build-arg NEXT_PUBLIC_API_BASE_URL=http://localhost:8080 --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Y2hlZXJmdWwtcmFjY29vbi03MC5jbGVyay5hY2NvdW50cy5kZXYk ./Drive/frontend
 
 kind load docker-image splitttr/drive-backend:local --name splitttr
 kind load docker-image splitttr/mdb-service:local --name splitttr
@@ -22,9 +19,7 @@ kubectl apply -n splitttr -f k8s/12-minio.yaml
 kubectl apply -n splitttr -f k8s/13-minio-init-job.yaml
 kubectl apply -n splitttr -f k8s/20-configmap.yaml
 
-kubectl create secret generic app-secrets -n splitttr \
-  --from-literal=CLERK_SECRET_KEY=PASTE_SECRET_KEY \
-  --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic app-secrets -n splitttr --from-literal=CLERK_SECRET_KEY=sk_test_eJDJ7j9EnvzIcVpbSh7DunDKdmUfDsJMMHBoRzJoIt --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply -n splitttr -f k8s/30-mdb-service.yaml
 kubectl apply -n splitttr -f k8s/31-docs-service.yaml
@@ -40,6 +35,12 @@ kubectl port-forward -n splitttr svc/drive-frontend 3000:3000
 
 in na tretjem:
 kubectl port-forward -n splitttr svc/docs-service 8082:8082
+
+restart:
+docker build -t splitttr/docs-service:local ./docs-service
+kind load docker-image splitttr/docs-service:local --name splitttr
+kubectl rollout restart -n splitttr deploy/docs-service
+kubectl rollout status  -n splitttr deploy/docs-service
 
 
 old

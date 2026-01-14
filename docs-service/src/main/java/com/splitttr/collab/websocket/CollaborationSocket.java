@@ -24,7 +24,7 @@ public class CollaborationSocket {
     // Store connection state externally since the socket instance may not persist
     private static final Map<String, ConnectionState> connectionStates = new ConcurrentHashMap<>();
 
-    record ConnectionState(String userId, String documentId) {}
+    record ConnectionState(String userId, String username, String documentId) {}
 
     @OnOpen
     // On open.
@@ -54,13 +54,14 @@ public class CollaborationSocket {
 
     private void handleJoin(ClientMessage msg, WebSocketConnection connection) {
         String userId = msg.userId();
+        String username = (msg.username() == null || msg.username().isBlank()) ? userId : msg.username();
         String docId = msg.documentId();
 
         // Store state for this connection
-        connectionStates.put(connection.id(), new ConnectionState(userId, docId));
+        connectionStates.put(connection.id(), new ConnectionState(userId, username, docId));
 
         DocumentSession session = sessionManager.getOrCreateSession(docId);
-        session.addUser(userId, connection);
+        session.addUser(userId, username, connection);
 
         System.out.println("User " + userId + " joined document " + docId);
         System.out.println("Active users: " + session.getActiveUsers());
@@ -76,7 +77,7 @@ public class CollaborationSocket {
 
         // Notify others
         session.broadcast(
-            ServerMessage.userJoined(docId, userId, session.getActiveUsers()),
+            ServerMessage.userJoined(docId, userId, username, session.getActiveUsers()),
             userId
         );
     }
@@ -116,7 +117,7 @@ public class CollaborationSocket {
 
         session.updateCursor(state.userId(), pos);
         session.broadcast(
-            ServerMessage.cursor(state.documentId(), state.userId(), pos),
+            ServerMessage.cursor(state.documentId(), state.userId(), state.username(), pos),
             state.userId()
         );
     }
@@ -128,7 +129,7 @@ public class CollaborationSocket {
         DocumentSession session = sessionManager.getSession(state.documentId());
         if (session != null) {
             session.removeUser(state.userId());
-            session.broadcast(ServerMessage.userLeft(state.documentId(), state.userId()), null);
+            session.broadcast(ServerMessage.userLeft(state.documentId(), state.userId(), state.username()), null);
             sessionManager.removeSessionIfEmpty(state.documentId());
         }
     }

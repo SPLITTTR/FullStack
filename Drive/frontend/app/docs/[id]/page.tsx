@@ -15,7 +15,7 @@ type DocResponse = {
   version: number;
 };
 
-type ActiveUser = { userId: string; cursorPosition: number };
+type ActiveUser = { userId: string; username?: string; cursorPosition: number };
 
 type Toast = {
   id: string;
@@ -82,6 +82,7 @@ export default function DocEditorPage() {
 
   const [activeUsers, setActiveUsers] = useState<ActiveUser[]>([]);
   const [remoteCursors, setRemoteCursors] = useState<Record<string, number>>({});
+  const [remoteUsernames, setRemoteUsernames] = useState<Record<string, string>>({});
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [overlayInset, setOverlayInset] = useState<{ left: number; top: number; lineHeight: number }>({ left: 1, top: 1, lineHeight: 18 });
   const [scrollTick, setScrollTick] = useState(0);
@@ -185,7 +186,7 @@ export default function DocEditorPage() {
     cursorSendRef.current.lastSent = now;
 
     try {
-      ws.send(JSON.stringify({ type: 'cursor', documentId: docId, userId: meId, cursorPosition: pos }));
+      ws.send(JSON.stringify({ type: 'cursor', documentId: docId, userId: meId, username: myUsername, cursorPosition: pos }));
     } catch {
       // ignore
     }
@@ -268,7 +269,7 @@ export default function DocEditorPage() {
 
     ws.onopen = () => {
       setWsStatus('connected');
-      ws.send(JSON.stringify({ type: 'join', documentId: docId, userId: meId }));
+      ws.send(JSON.stringify({ type: 'join', documentId: docId, userId: meId, username: myUsername }));
 
       // Send initial cursor (best-effort)
       window.setTimeout(() => {
@@ -294,12 +295,15 @@ export default function DocEditorPage() {
 
         // Build initial cursor map excluding me
         const cursorMap: Record<string, number> = {};
+        const nameMap: Record<string, string> = {};
         for (const u of users) {
           if (!u?.userId) continue;
           if (u.userId === meId) continue;
           cursorMap[u.userId] = Number(u.cursorPosition ?? 0);
+          if (u.username) nameMap[u.userId] = String(u.username);
         }
         setRemoteCursors(cursorMap);
+        if (Object.keys(nameMap).length) setRemoteUsernames((m) => ({ ...m, ...nameMap }));
         return;
       }
 
@@ -319,24 +323,31 @@ export default function DocEditorPage() {
         const uid = (msg?.userId ?? '').toString();
         if (!uid || uid === meId) return;
         const pos = Number(msg?.cursorPosition ?? 0);
+        const uname = (msg?.username ?? '').toString();
+        if (uname) setRemoteUsernames((m) => ({ ...m, [uid]: uname }));
         setRemoteCursors((cur) => ({ ...cur, [uid]: pos }));
         return;
       }
 
       if (msg.type === 'user_joined') {
         const uid = (msg?.userId ?? '').toString();
-        if (uid && uid !== meId) pushToast(`${shortId(uid)} joined`);
+        const uname = (msg?.username ?? '').toString();
+        if (uid && uid !== meId) pushToast(`${uname || shortId(uid)} joined`);
+        if (uname) setRemoteUsernames((m) => ({ ...m, [uid]: uname }));
 
         const users: ActiveUser[] = Array.isArray(msg?.activeUsers) ? msg.activeUsers : [];
         if (users.length) {
           setActiveUsers(users);
           const cursorMap: Record<string, number> = {};
+          const nameMap: Record<string, string> = {};
           for (const u of users) {
             if (!u?.userId) continue;
             if (u.userId === meId) continue;
             cursorMap[u.userId] = Number(u.cursorPosition ?? 0);
+            if (u.username) nameMap[u.userId] = String(u.username);
           }
           setRemoteCursors(cursorMap);
+          if (Object.keys(nameMap).length) setRemoteUsernames((m) => ({ ...m, ...nameMap }));
         } else if (uid && uid !== meId) {
           // Best-effort if backend didn't send list
           setRemoteCursors((cur) => ({ ...cur, [uid]: cur[uid] ?? 0 }));
@@ -346,9 +357,16 @@ export default function DocEditorPage() {
 
       if (msg.type === 'user_left') {
         const uid = (msg?.userId ?? '').toString();
-        if (uid && uid !== meId) pushToast(`${shortId(uid)} left`);
+        const uname = (msg?.username ?? '').toString();
+        if (uid && uid !== meId) pushToast(`${uname || shortId(uid)} left`);
+        if (uname) setRemoteUsernames((m) => ({ ...m, [uid]: uname }));
         if (uid) {
           setRemoteCursors((cur) => {
+            const n = { ...cur };
+            delete n[uid];
+            return n;
+          });
+          setRemoteUsernames((cur) => {
             const n = { ...cur };
             delete n[uid];
             return n;
@@ -553,7 +571,7 @@ export default function DocEditorPage() {
                       textOverflow: 'ellipsis',
                     }}
                   >
-                    {shortId(uid)}
+                    {remoteUsernames[uid] || shortId(uid)}
                   </div>
                 </div>
               );
@@ -611,7 +629,7 @@ export default function DocEditorPage() {
       </div>
 
       <div style={{ marginTop: 10, color: '#888', fontSize: 12 }}>
-        Active: {Math.max(1, activeUsers.length || 1)} • You: {shortId(meId)}
+        Active: {Math.max(1, activeUsers.length || 1)}
       </div>
     </div>
   );

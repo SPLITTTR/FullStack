@@ -21,7 +21,7 @@ public class DocumentSession {
     private String content;
     private long version;
 
-    public record UserConnection(WebSocketConnection connection, int cursorPosition) {}
+    public record UserConnection(WebSocketConnection connection, String username, int cursorPosition) {}
 
     public DocumentSession(String documentId) {
         this.documentId = documentId;
@@ -55,8 +55,8 @@ public class DocumentSession {
     }
 
     // Add user.
-    public void addUser(String userId, WebSocketConnection conn) {
-        connections.put(userId, new UserConnection(conn, 0));
+    public void addUser(String userId, String username, WebSocketConnection conn) {
+        connections.put(userId, new UserConnection(conn, username, 0));
     }
 
     // Delete remove user.
@@ -68,7 +68,7 @@ public class DocumentSession {
     public void updateCursor(String userId, int position) {
         var existing = connections.get(userId);
         if (existing != null) {
-            connections.put(userId, new UserConnection(existing.connection(), position));
+            connections.put(userId, new UserConnection(existing.connection(), existing.username(), position));
         }
     }
 
@@ -80,7 +80,7 @@ public class DocumentSession {
     // Retrieve get active users.
     public List<ActiveUser> getActiveUsers() {
         return connections.entrySet().stream()
-            .map(e -> new ActiveUser(e.getKey(), e.getValue().cursorPosition()))
+            .map(e -> new ActiveUser(e.getKey(), e.getValue().username(), e.getValue().cursorPosition()))
             .toList();
     }
 
