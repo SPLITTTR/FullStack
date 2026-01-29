@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drive-frontend
+  namespace: splitttr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drive-frontend
+  template:
+    metadata:
+      labels:
+        app: drive-frontend
+    spec:
+      containers:
+        - name: drive-frontend
+          image: <ACR_LOGIN_SERVER>/drive-frontend:1
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_BASE_URL
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: NEXT_PUBLIC_API_BASE_URL } }
+            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drive-frontend
+  namespace: splitttr
+spec:
+  selector:
+    app: drive-frontend
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

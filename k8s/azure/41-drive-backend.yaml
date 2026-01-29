@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drive-backend
+  namespace: splitttr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drive-backend
+  template:
+    metadata:
+      labels:
+        app: drive-backend
+    spec:
+      containers:
+        - name: drive-backend
+          image: <ACR_LOGIN_SERVER>/drive-backend:1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CLERK_SECRET_KEY
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: CLERK_SECRET_KEY } }
+            - name: MP_JWT_VERIFY_PUBLICKEY_LOCATION
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: MP_JWT_VERIFY_PUBLICKEY_LOCATION } }
+            - name: MP_JWT_VERIFY_ISSUER
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: MP_JWT_VERIFY_ISSUER } }
+
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: QUARKUS_DATASOURCE_JDBC_URL } }
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: QUARKUS_DATASOURCE_USERNAME } }
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: QUARKUS_DATASOURCE_PASSWORD } }
+
+            - name: APP_STORAGE_PROVIDER
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: APP_STORAGE_PROVIDER } }
+            - name: AZURE_BLOB_CONTAINER
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: AZURE_BLOB_CONTAINER } }
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom: { secretKeyRef: { name: splitttr-secrets, key: AZURE_STORAGE_CONNECTION_STRING } }
+
+            - name: DOC_SERVICE_URL
+              value: "http://mdb-service:8081"
+          readinessProbe:
+            httpGet: { path: /q/health, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drive-backend
+  namespace: splitttr
+spec:
+  selector:
+    app: drive-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

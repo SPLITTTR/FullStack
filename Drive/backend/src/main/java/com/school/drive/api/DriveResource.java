@@ -59,7 +59,7 @@ public class DriveResource {
   @POST
   @Path("/folders")
   @Consumes(MediaType.APPLICATION_JSON)
-  // Create create folder.
+  // Create folder.
   public ItemDto createFolder(CreateFolderRequest req) {
     UUID userId = auth.upsertCurrentUser().id;
     return items.createFolder(userId, req.parentId, req.name);
@@ -75,33 +75,33 @@ public class DriveResource {
   }
 
   
-@POST
-@Path("/docs")
-@Consumes(MediaType.APPLICATION_JSON)
-// Create create doc.
-public ItemDto createDoc(CreateDocRequest req) {
-  UUID userId = auth.upsertCurrentUser().id;
-  return items.createDoc(userId, req.parentId, req.title);
-}
+  @POST
+  @Path("/docs")
+  @Consumes(MediaType.APPLICATION_JSON)
+  // Create doc.
+  public ItemDto createDoc(CreateDocRequest req) {
+    UUID userId = auth.upsertCurrentUser().id;
+    return items.createDoc(userId, req.parentId, req.title);
+  }
 
-@GET
-@Path("/docs/{id}")
-// Retrieve get doc.
-public DocResponse getDoc(@PathParam("id") UUID id) {
-  UUID userId = auth.upsertCurrentUser().id;
-  return items.getDoc(userId, id);
-}
+  @GET
+  @Path("/docs/{id}")
+  // Retrieve get doc.
+  public DocResponse getDoc(@PathParam("id") UUID id) {
+    UUID userId = auth.upsertCurrentUser().id;
+    return items.getDoc(userId, id);
+  }
 
-@PUT
-@Path("/docs/{id}")
-@Consumes(MediaType.APPLICATION_JSON)
-// Update update doc.
-public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
-  UUID userId = auth.upsertCurrentUser().id;
-  return items.updateDoc(userId, id, req.title, req.content);
-}
+  @PUT
+  @Path("/docs/{id}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  // Update update doc.
+  public DocResponse updateDoc(@PathParam("id") UUID id, UpdateDocRequest req) {
+    UUID userId = auth.upsertCurrentUser().id;
+    return items.updateDoc(userId, id, req.title, req.content);
+  }
 
-@POST
+  @POST
   @Path("/files/upload")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   // Handle upload file.

@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: splitttr-ingress
+  namespace: splitttr
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: splitttr.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: drive-frontend
+                port:
+                  number: 3000
+    - host: api.splitttr.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: drive-backend
+                port:
+                  number: 8080

@@ -61,6 +61,9 @@ public class ItemService {
 
 @Inject S3Client s3;
 
+  
+  @Inject
+  StorageGateway storageGateway;
   @Inject EntityManager em;
 
   @Inject S3Presigner presigner;
@@ -100,7 +103,7 @@ public class ItemService {
   }
 
   @Transactional
-  // Create create folder.
+  // Create folder.
   public ItemDto createFolder(UUID userId, UUID parentId, String name) {
     if (name == null || name.isBlank()) throw new BadRequestException("name required");
 
@@ -196,6 +199,10 @@ public class ItemService {
   @Transactional
   // Handle presign upload.
   public PresignUploadResponse presignUpload(UUID userId, UUID parentId, String filename, String mimeType, Long sizeBytes) {
+    if (!"s3".equals(storageGateway.provider())) {
+      throw new BadRequestException("Presigned uploads are only supported when app.storage.provider=s3. Use /v1/files/upload for backend streaming uploads.");
+    }
+
     if (filename == null || filename.isBlank()) throw new BadRequestException("filename required");
 
     if (parentId != null) {
@@ -249,12 +256,7 @@ public class ItemService {
     var access = perms.accessFor(userId, fileId);
     if (!access.canRead()) throw new ForbiddenException("No access");
 
-    GetObjectRequest get = GetObjectRequest.builder()
-        .bucket(storage.bucket())
-        .key(it.s3Key)
-        .build();
-
-    ResponseInputStream<GetObjectResponse> stream = s3.getObject(get);
+    InputStream stream = storageGateway.download(it.s3Key);
     String mime = it.mimeType != null ? it.mimeType : "application/octet-stream";
     String name = it.name != null ? it.name : "file";
     return new DownloadedFile(stream, mime, name);
@@ -333,7 +335,7 @@ public void deleteItem(UUID userId, UUID itemId) {
   List<String> keys = items.listFileKeysInSubtree(itemId);
   for (String k : keys) {
     try {
-      s3.deleteObject(DeleteObjectRequest.builder().bucket(storage.bucket()).key(k).build());
+      storageGateway.delete(k);
     } catch (Exception ignored) {}
   }
 
